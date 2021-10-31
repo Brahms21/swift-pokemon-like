@@ -7,8 +7,7 @@
 
 import SwiftUI
 
-@main
-struct PokemonTextApp: App {
+@main struct PokemonTextApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
