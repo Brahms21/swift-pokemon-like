@@ -12,6 +12,10 @@ struct Player{
     var items = ["POTIONS","POKEBALLS"]
     var pokemons: [Pokemon]
     
+    func choosePlayer() -> String {
+        "Oh \(self.name)! How could I ever Forget!"
+    }
+    
     func healPokemon() -> String{
         "Player has used a HEALING POTION"
     }

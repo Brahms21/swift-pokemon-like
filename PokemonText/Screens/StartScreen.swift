@@ -30,22 +30,27 @@ struct StartScreen: View {
     // PROPERTIES
     @Binding var player: Player
     @Binding var pokemon: Pokemon
+    @Binding var enemyPokemon: Pokemon
     @StateObject var gameText = GameText()
     @State private var choosePokemon = false
     @State private var pokemonChosen = false
     @State private var logoScreen = true
     @State private var startAnimation = false
-    @State private var transitionAnimation = false    
     @State private var opacity = 1.0
     @State private var opacity1 = 0.0
     @State private var opacity2 = 0.0
     @State private var opacity3 = 0.0
     @State private var opacity4 = 0.0
     
-    func ChoosePokemonButton(_ chosenPokemon: String, _ enemyPokemon: String) {
-        pokemon.name = chosenPokemon
+    func ChoosePokemonButton(_ chosenPokemon: Int) {
+        pokemon = pokemonArray[chosenPokemon]
         player.pokemons.append(pokemon)
-        pokemon.enemyName = enemyPokemon
+        if chosenPokemon < pokemonArray.count - 1 {
+            enemyPokemon = pokemonArray[chosenPokemon + 1]
+        } else {
+            enemyPokemon = pokemonArray[0]
+        }
+        
         withAnimation(){
             opacity3 -= 1.0
         }
@@ -131,7 +136,13 @@ struct StartScreen: View {
                         withAnimation(){
                             opacity2 -= 1.0
                         }
-                       
+                        if player.name == "Ash Ketchum"{
+                            choosePokemon = true
+                            pokemonChosen = true
+                            pokemon = pokemonArray[3]
+                            player.pokemons.append(pokemon)
+                        }
+                        
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                             choosePokemon = true
                         }
@@ -157,7 +168,7 @@ struct StartScreen: View {
                
                 VStack {
                    
-                    Text("Oh \(player.name)! How could I ever Forget!").padding()
+                    Text(player.choosePlayer()).padding()
                         .multilineTextAlignment(.center)
                         .font(.system(.headline))
                    
@@ -167,25 +178,19 @@ struct StartScreen: View {
                     HStack{
                        
                         Button(action: {
-                           ChoosePokemonButton("CHARMANDER", "SQUIRTLE")
-                            pokemon.skill = "BLAZE"
-                            pokemon.enemySkill = "TORRENT"
+                           ChoosePokemonButton(0)
                         }) {
                             Image("charmander").pokemonImage()
                         }
                        
                         Button(action: {
-                            ChoosePokemonButton("SQUIRTLE", "BULBASAUR")
-                            pokemon.skill = "TORRENT"
-                            pokemon.enemySkill = "OVERGROW"
+                            ChoosePokemonButton(1)
                         }) {
                             Image("squirtle").pokemonImage()
                         }
                         
                         Button(action: {
-                            ChoosePokemonButton("BULBASAUR", "CHARMANDER")
-                            pokemon.skill = "OVERGROW"
-                            pokemon.enemySkill = "BLAZE"
+                            ChoosePokemonButton(2)
                             
                         }) {
                             Image("bulbasaur").pokemonImage()
@@ -204,23 +209,24 @@ struct StartScreen: View {
         } else {
             
             ZStack {
-                switch pokemon.name {
-                case "CHARMANDER": Color(.red).ignoresSafeArea(.all, edges: .all)
-                case "SQUIRTLE": Color(.blue).ignoresSafeArea(.all, edges: .all)
-                case "BULBASAUR": Color(.green).ignoresSafeArea(.all, edges: .all)
+                switch pokemon.type {
+                case "FIRE": Color("ColorOrange").ignoresSafeArea(.all, edges: .all)
+                case "WATER": Color("ColorAqua").ignoresSafeArea(.all, edges: .all)
+                case "PLANT": Color("ColorGreen").ignoresSafeArea(.all, edges: .all)
+                case "PSYCHIC": Color("ColorPurple").ignoresSafeArea(.all, edges: .all)
                 default: Color("ColorYellow").ignoresSafeArea(.all, edges: .all)
                 }
                     
                 VStack {
                     Spacer()
                     
-                    Text("\(pokemon.name)! Great Choice! It's already starting to like you.").padding().multilineTextAlignment(.center).font(.system(.headline))
+                    Text(pokemon.choosePokemonText()).padding().multilineTextAlignment(.center).font(.system(.headline))
                     
                     Image("\(pokemon.name)".lowercased()).pokemonImage().padding()
                     
                     Spacer()
                    
-                    Text(gameText.letsBattle + pokemon.enemyName)
+                    Text(gameText.letsBattle + enemyPokemon.name)
                         .padding()
                         .multilineTextAlignment(.center)
                         .font(.system(.headline))
@@ -244,13 +250,13 @@ struct StartScreen: View {
                         .padding()
                 }//: VSTACK
                 .foregroundColor(Color("ColorBlue"))
-                .opacity(opacity4)
-                    .onAppear {
-                        withAnimation(.easeIn(duration: 0.5)) {
-                            opacity4 += 1
-                        }
+            
+            }.opacity(opacity4)
+                .onAppear {
+                    withAnimation(.easeIn(duration: 0.5)) {
+                        opacity4 += 1
                     }
-            } //: ZSTACK
+                } //: ZSTACK
             
         }
     }
@@ -258,10 +264,11 @@ struct StartScreen: View {
 
 // PREVIEW
 struct StartScreen_Previews: PreviewProvider {
-    @State static var player = Player(pokemons: [Pokemon(name: "CHARMANDER", level: 1, enemyName: "SQUIRTLE", enemyLevel: 1, skill: "BLAZE", enemySkill: "TORRENT")])
-    @State static var pokemon = Pokemon(name: "CHARMANDER", level: 1, enemyName: "SQUIRTLE", enemyLevel: 1, skill: "BLAZE", enemySkill: "TORRENT")
+    @State static var player = Player(pokemons: [pokemonArray[0]])
+    @State static var pokemon = pokemonArray[0]
+    @State static var enemyPokemon = pokemonArray[1]
     static var previews: some View {
-        StartScreen(player: $player, pokemon: $pokemon)
+        StartScreen(player: $player, pokemon: $pokemon, enemyPokemon: $enemyPokemon)
     }
 }
 

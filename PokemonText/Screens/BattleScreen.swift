@@ -11,8 +11,10 @@ import SwiftUI
 struct BattleScreen: View {
     @Binding var player: Player
     @Binding var pokemon: Pokemon
+    @Binding var enemyPokemon: Pokemon
     @State private var itemList = false
     @State private var gameText = ""
+    @State private var gameText2 = ""
     @State private var pokemonHp = 0
     @State private var enemyHp = 0
     @State private var pokemonMp = 0
@@ -22,23 +24,22 @@ struct BattleScreen: View {
     @State private var itemMenu = false
     @State private var potions = 3
     @State private var pokeballs = 3
+    @State private var opacity: Double = 0
+    @AppStorage("mainMenu") var mainMenu = false
+    @AppStorage("goToBattle") var goToBattle = true
     
     func enemyPokemonAtt(){
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            let enemyAtt = pokemon.enemySkillAtt
-            if enemyHp <= 0{
-                enemyHp = 0
-                win = true
-            }
+            let enemyAtt = enemyPokemon.skillAtt
             pokemonHp -= enemyAtt
             enemyMp -= 3
             if pokemonHp <= 0 {
                 pokemonHp = 0
                 lose = true
             }
-            gameText = """
-\(gameText)
-\(pokemon.getAttackedText(enemyAtt))
+            gameText2 = """
+            \(enemyPokemon.attackText(enemyAtt))
+\(pokemon.loseHpText(enemyAtt))
 """
         }
         
@@ -46,35 +47,28 @@ struct BattleScreen: View {
     
     func catchPokemon(){
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            gameText = """
-\(gameText)
-3
-"""
+            gameText2 = "3"
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            gameText = """
-\(gameText)
-2
-"""
+            gameText2 = "2"
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            gameText = """
-\(gameText)
-1
-"""
+            gameText2 = "1"
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-            if Int.random(in: 0...(enemyHp - 5)) == 0{
+            if Int.random(in: 0...(enemyHp)) <= 2{
                 gameText = """
     \(gameText)
     SUCCESS
     """
-                
+                player.pokemons.append(enemyPokemon)
+                win = true
             } else {
                 gameText = """
     \(gameText)
-    FAILED
+    FAILED to catch \(enemyPokemon.name)
     """
+                enemyPokemonAtt()
             }
         }
         
@@ -90,8 +84,8 @@ struct BattleScreen: View {
                     HStack(spacing: 20){
                         
                         VStack {
-                            //Image(pokemon.name.lowercased())
-                            Image("charmander").pokemonImage()
+                            Image(pokemon.name.lowercased()).pokemonImage()
+                            //Image("charmander").pokemonImage()
                             Text("\(pokemon.name)")
                             Text("HP: \(pokemonHp) / \(pokemon.maxHp)")
                             Text("MP: \(pokemonMp) / \(pokemon.maxMp)")
@@ -100,11 +94,11 @@ struct BattleScreen: View {
                         Image("vs").resizable().scaledToFit()
                         
                         VStack {
-                            //Image(pokemon.enemyName.lowercased())
-                            Image("squirtle").pokemonImage()
-                            Text("\(pokemon.enemyName)")
-                            Text("HP: \(String(enemyHp)) / \(pokemon.enemyMaxHp)")
-                            Text("MP: \(enemyMp) / \(pokemon.enemyMaxMp)")
+                            Image(enemyPokemon.name.lowercased()).pokemonImage()
+                            //Image("squirtle").pokemonImage()
+                            Text("\(enemyPokemon.name)")
+                            Text("HP: \(String(enemyHp)) / \(enemyPokemon.maxHp)")
+                            Text("MP: \(enemyMp) / \(enemyPokemon.maxMp)")
                         }
                     }
                 HStack(spacing: 50) {
@@ -112,7 +106,15 @@ struct BattleScreen: View {
                         let pokemonAtt = pokemon.skillAtt
                         pokemonMp -= 3
                         enemyHp -= pokemonAtt
-                        gameText = pokemon.attackText(pokemonAtt)
+                        if enemyHp <= 0{
+                            enemyHp = 0
+                            win = true
+                            return
+                        }
+                        gameText = """
+                            \(pokemon.attackText(pokemonAtt))
+                            \(enemyPokemon.loseHpText(pokemonAtt))
+                            """
                         
                         enemyPokemonAtt()
                     }) {
@@ -128,6 +130,7 @@ struct BattleScreen: View {
                     }.buttonModify()
                 }
                 Text(gameText).padding().multilineTextAlignment(.center)
+                Text(gameText2)
                 
                 if itemMenu{
                     VStack() {
@@ -142,7 +145,10 @@ struct BattleScreen: View {
                             if pokemonHp > pokemon.maxHp{
                                 pokemonHp = pokemon.maxHp
                             }
-                            gameText = "\(player.name) has used a HEALING POTION"
+                            gameText = """
+\(player.healPokemon())
+\(pokemon.healPokemonText())
+"""
                             enemyPokemonAtt()
                         }){
                             Text("Use HEALING POTION")
@@ -162,7 +168,13 @@ struct BattleScreen: View {
                 VStack {
                     
                     Text("YOU WON!").font(.largeTitle.bold()).background(.green)
-                    Button(action:{}){
+                    Button(action:{
+                        withAnimation(.easeIn(duration: 0.5)){
+                            opacity -= 1
+                        }
+                        goToBattle = false
+                        mainMenu = true
+                    }){
                         
                         Image(systemName:"arrowtriangle.right.circle" )
                         Text("Tap to Continue")
@@ -175,10 +187,13 @@ struct BattleScreen: View {
                 VStack {
                     
                     Text("YOU LOST").font(.largeTitle.bold()).background(.red)
-                    Button(action:{}){
+                    Button(action:{
+                        goToBattle = false
+                        mainMenu = true
+                    }){
                         
-                        Image(systemName:"arrow.counterclockwise.circle" )
-                        Text("Tap to Restart")
+                        Image(systemName:"arrowtriangle.right.circle" )
+                        Text("Tap to Continue")
                             .font(.system(.title3, design: .rounded))
                             .fontWeight(.bold)
                     }.buttonModify()
@@ -188,21 +203,25 @@ struct BattleScreen: View {
         }.onAppear{
             gameText = pokemon.battleStartText()
             pokemonHp = pokemon.maxHp
-            enemyHp = pokemon.enemyMaxHp
+            enemyHp = enemyPokemon.maxHp
             pokemonMp = pokemon.maxMp
-            enemyMp = pokemon.enemyMaxMp
-        }//: ZSTACK
+            enemyMp = enemyPokemon.maxMp
+            withAnimation(.easeIn(duration: 0.5)) {
+                opacity += 1
+            }
+        }.opacity(opacity)//: ZSTACK
     }
 }
 
 
 
 struct BattleScreen_Previews: PreviewProvider {
-    @State static var player = Player(pokemons: [Pokemon(name: "CHARMANCER", level: 1, enemyName: "SQUIRTLE", enemyLevel: 1, skill: "BLAZE", enemySkill: "TORRENT")])
+    @State static var player = Player(pokemons: [pokemonArray[0]])
 
     
-    @State static var pokemon = Pokemon(name: "CHARMANDER", level: 1, enemyName: "SQUIRTLE", enemyLevel: 1, skill: "BLAZE", enemySkill: "TORRENT")
+    @State static var pokemon = pokemonArray[0]
+    @State static var enemyPokemon = pokemonArray[1]
     static var previews: some View {
-        BattleScreen(player: $player, pokemon: $pokemon)
+        BattleScreen(player: $player, pokemon: $pokemon, enemyPokemon: $enemyPokemon)
     }
 }

@@ -8,15 +8,19 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State var player = Player(pokemons: [Pokemon(name: "CHARMANDER", level: 1, enemyName: "SQUIRTLE", enemyLevel: 1, skill: "BLAZE", enemySkill: "TORRENT")])
-    @State var pokemon = Pokemon(name: "", level: 1, enemyName: "SQUIRTLE", enemyLevel: 1, skill: "BLAZE", enemySkill: "TORRENT")
+    @State var player = Player(pokemons: [pokemonArray[0]])
+    @State var pokemon = pokemonArray[0]
+    @State var enemyPokemon = pokemonArray[1]
     @AppStorage("goToBattle") var goToBattle = false
+    @AppStorage("mainMenu") var mainMenu = false
    
     var body: some View {
         if goToBattle{
-            BattleScreen(player: $player, pokemon: $pokemon)
-        } else {
-            StartScreen(player: $player, pokemon: $pokemon)
+            BattleScreen(player: $player, pokemon: $pokemon, enemyPokemon: $enemyPokemon)
+        } else if mainMenu == false{
+            StartScreen(player: $player, pokemon: $pokemon, enemyPokemon: $enemyPokemon)
+        } else if mainMenu == true {
+            MainMenu(player: $player)
         }
     }
 }
