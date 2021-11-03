@@ -9,25 +9,36 @@ import SwiftUI
 
 
 struct MainMenu: View {
+    
+    // BINDING PROPERTIES
     @Binding var player: Player
+    
+    // STATE PROPERTIES
     @State private var startAnimation = false
     @State private var opacity: Double = 0
-    @AppStorage("goToBattle") var goToBattle = false
-    @AppStorage("mainMenu") var mainMenu = true
     @State public var pokemonMenu = false
     @State public var itemsMenu = false
     @State public var storeMenu = false
-
+    
+    // STORED PROPERTIES
+    @AppStorage("goToBattle") var goToBattle = false
+    @AppStorage("mainMenu") var mainMenu = true
+    
+    // BODY
     var body: some View {
         ZStack {
             Color("ColorYellow").ignoresSafeArea(.all, edges: .all)
             if mainMenu && !pokemonMenu && !itemsMenu && !storeMenu{
                 VStack {
+                    
+                    // POKEPOINTS
                     HStack {
                         Spacer()
                         Image("pokepoints").resizable().frame(width: 60, height: 60, alignment: .leading)
                         Text(String(player.pokePoints)).font(.title)
                     }.padding().opacity(opacity)
+                    
+                    // GAME LOGO
                     Image("logo")
                         .resizable()
                         .scaledToFit()
@@ -36,6 +47,8 @@ struct MainMenu: View {
                     
                     Spacer()
                     VStack{
+                        
+                        // BATTLE BUTTON
                         Spacer()
                         Button(action:{
                             goToBattle = true
@@ -43,16 +56,22 @@ struct MainMenu: View {
                         }){
                             Text("Battle!")
                         }.buttonModify()
+                        
+                        // POKEMONS MENU BUTTON
                         Button(action:{
                             pokemonMenu = true
                         }){
                             Text("Pokemons")
                         }.buttonModify()
+                        
+                        // ITEMS MENU BUTTON
                         Button(action:{
                             itemsMenu = true
                         }){
                             Text("Items")
                         }.buttonModify()
+                        
+                        // STORE MENU BUTTON
                         Button(action:{
                             storeMenu = true
                         }){
@@ -70,6 +89,7 @@ struct MainMenu: View {
                         opacity += 1
                     }
                 }
+                // MENU BOOL ACTIVATORS
             } else if pokemonMenu{
                 PokemonChoice(player: $player, pokemonMenu: $pokemonMenu)
             } else if itemsMenu{
@@ -77,10 +97,11 @@ struct MainMenu: View {
             } else if storeMenu{
                 StoreScreen(storeMenu: $storeMenu, player: $player)
             }
-        }
+        } //: ZSTACK
     }
 }
 
+// PREVIEW
 struct MainMenu_Previews: PreviewProvider {
     @State static var player = Player(name: "whatevs", pokemons: [pokemonArray[0], pokemonArray[3]])
     static var previews: some View {

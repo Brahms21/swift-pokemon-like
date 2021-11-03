@@ -9,37 +9,30 @@ import Foundation
 import SwiftUI
 
 struct Pokemon: Identifiable, Hashable {
+    
+    // PROPERTIES
     var id = UUID()
     
     var name: String = ""
    
     var level: Int
-   
-    var maxHp: Int {
-        (level * 5) + 15
-    }
     
-    var maxMp: Int {
-        (level * 5) + 10
-    }
-    
-   
-    var hp: Int {
-        get{
-            maxHp
-        }
-    }
-   
     var exp = 0
    
-    var requiredExp: Int {
-        level * 20
-    }
+    // CALCULATED PROPERTIES
+    var maxHp: Int {(level * 5) + 15}
     
-    var giveExp: Int {
-        (level * Int.random(in: 1...3)) + 5
-    }
+    var maxMp: Int {(level * 5) + 10}
     
+    var hp: Int {get{maxHp}}
+   
+    var requiredExp: Int {level * 20}
+    
+    var giveExp: Int {(level * Int.random(in: 1...3)) + 5}
+    
+    var skillAtt: Int {level + Int.random(in: 1...4)}
+    
+    // SWITCH PROPERTIES
     var type: String{
         switch name{
         case "CHARMANDER": return "FIRE"
@@ -60,33 +53,17 @@ struct Pokemon: Identifiable, Hashable {
         }
     }
    
-    var skillAtt: Int {
-        level + Int.random(in: 1...4)
-    }
-    
-    
+    // INITIALIZERS
     init(name: String, level: Int){
         self.name = name
         self.level = level
 
     }
     
-    /*mutating func getAttacked(){
-        self.hp -= self.enemySkillAtt
-    }
-    mutating func gainExp(){
-        self.exp += self.giveExp
-    }
-    mutating func levelUp(){
-        self.level += 1
-    }
-    mutating func healPokemon() {
-        self.hp += 10
-        if self.hp > self.maxHp{
-            self.hp = self.maxHp
-        }
-    }*/
+    // METHODS
     func choosePokemonText() -> String {
+        
+        // CHEATCODE
         if self.name == "MEWTWO"{
             return "Ash! I can't believe my eyes! Here's your legendary \(self.name)!"
         } else {
@@ -94,6 +71,7 @@ struct Pokemon: Identifiable, Hashable {
         }
         
     }
+    
     func battleStartText() -> String{
         "A WILD \(self.name) has appeared!"
     }
@@ -109,16 +87,11 @@ struct Pokemon: Identifiable, Hashable {
     }
 }
 
+// DEFAULT ARRAY OF STRUCTS
 var pokemonArray: [Pokemon] = [
     Pokemon(name: "CHARMANDER", level: 1),
     Pokemon(name: "SQUIRTLE", level: 1),
     Pokemon(name: "BULBASAUR", level: 1),
     Pokemon(name: "MEWTWO", level: 20)
     ]
-
-
-
-//implement the status with willSet and didSet so we can get the info and the new info conveniently
-//try to use private(set) syntax for setters see if it works out
-//use protocols for functions(e.g. when a pokemon attacks) that are shared with different structs
 

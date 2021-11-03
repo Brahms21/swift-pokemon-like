@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// CLASS EXTENSIONS
 extension Image {
     func pokemonImage() -> some View{
         self
@@ -27,10 +28,12 @@ extension Button {
 
 struct StartScreen: View {
     
-    // PROPERTIES
+    // BINDING PROPERTIES
     @Binding var player: Player
     @Binding var pokemon: Pokemon
     @Binding var enemyPokemon: Pokemon
+    
+    // STATE PROPERTIES
     @StateObject var gameText = GameText()
     @State private var choosePokemon = false
     @State private var pokemonChosen = false
@@ -42,6 +45,10 @@ struct StartScreen: View {
     @State private var opacity3 = 0.0
     @State private var opacity4 = 0.0
     
+    // STORED PROPERTIES
+    @AppStorage("goToBattle") var goToBattle = false
+    
+    // FUNCTIONS
     func ChoosePokemonButton(_ chosenPokemon: Int) {
         player.pokemons.remove(at: 0)
         player.pokemons.insert(pokemonArray[chosenPokemon], at: 0)
@@ -62,10 +69,10 @@ struct StartScreen: View {
         }
     }
     
-    @AppStorage("goToBattle") var goToBattle = false
     
     // BODY
     var body: some View {
+        
         // LOGO SCREEN
         
         if logoScreen{
@@ -74,6 +81,7 @@ struct StartScreen: View {
                Color("ColorYellow")
                     .ignoresSafeArea(.all, edges: .all)
                
+                // LOGO
                 VStack{
                     Image("logo")
                         .resizable()
@@ -83,6 +91,7 @@ struct StartScreen: View {
                     
                     Spacer()
                     
+                    // START BUTTON
                     Button(action: {
                         withAnimation(){
                             opacity -= 1.0
@@ -116,28 +125,33 @@ struct StartScreen: View {
                 }
             }
 }
+        
         // CHOOSE NAME SCREEN
         
         else if choosePokemon == false{
             ZStack {
                 Color("ColorYellow").ignoresSafeArea(.all, edges: .all)
                 
+                // GAME TEXT
                 VStack {
                     Text(gameText.chooseName)
                         .padding()
                         .multilineTextAlignment(.center)
                         .font(.system(.headline))
                     
+                    // NAME TEXT FIELD
                     TextField("Name", text: $player.name)
                         .padding()
                         .frame(width: 200, height: 50, alignment: .center)
                         .textFieldStyle(.roundedBorder)
                     
-                    
+                    // GO BUTTON
                     Button(action: {
                         withAnimation(){
                             opacity2 -= 1.0
                         }
+                       
+                        //CHEAT CODE
                         if player.name == "Ash Ketchum"{
                             choosePokemon = true
                             pokemonChosen = true
@@ -162,12 +176,14 @@ struct StartScreen: View {
                 }
             }
         }
-        //CHOOSE POKEMON SCREEN
+        
+        // CHOOSE POKEMON SCREEN
         
         else if pokemonChosen == false {
             ZStack {
                 Color("ColorYellow").ignoresSafeArea(.all, edges: .all)
                
+                // GAME TEXT
                 VStack {
                    
                     Text(player.choosePlayer()).padding()
@@ -177,6 +193,7 @@ struct StartScreen: View {
                     Text(gameText.choosePokemon).padding().multilineTextAlignment(.center)
                         .font(.system(.headline))
                    
+                    // POKEMON OPTIONS
                     HStack{
                        
                         Button(action: {
@@ -206,10 +223,14 @@ struct StartScreen: View {
                         }
                     }
             }
-            // TRANSITION TO BATTLE SCREEN
+            
+            // CHOSEN POKEMON SCREEN
+       
         } else {
             
             ZStack {
+                
+                // BACKGROUND ACCORDING TO POKEMON TYPE
                 switch pokemon.type {
                 case "FIRE": Color("ColorOrange").ignoresSafeArea(.all, edges: .all)
                 case "WATER": Color("ColorAqua").ignoresSafeArea(.all, edges: .all)
@@ -221,8 +242,10 @@ struct StartScreen: View {
                 VStack {
                     Spacer()
                     
+                    // GAME TEXT
                     Text(pokemon.choosePokemonText()).padding().multilineTextAlignment(.center).font(.system(.headline))
                     
+                    // CHOSEN POKEMON IMAGE
                     Image("\(pokemon.name)".lowercased()).resizable().scaledToFit().padding()
                     
                     Spacer()
@@ -230,6 +253,7 @@ struct StartScreen: View {
                         .multilineTextAlignment(.center)
                         .font(.system(.headline))
                     
+                    // GO BUTTON
                     Button(action:{
                         withAnimation(){
                             opacity4 -= 1.0

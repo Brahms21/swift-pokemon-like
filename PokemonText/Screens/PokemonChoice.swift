@@ -8,17 +8,24 @@
 import SwiftUI
 
 struct PokemonChoice: View {
+    
+    //BINDING PROPERTIES
     @Binding var player: Player
-    @State private var color: String = "ColorYellow"
-    @State private var opacity: Double = 0
     @Binding var pokemonMenu: Bool
     
+    // STATE PROPERTIES
+    @State private var color: String = "ColorYellow"
+    @State private var opacity: Double = 0
     
+    
+    // BODY
     var body: some View {
         ZStack {
             Color(color).ignoresSafeArea(.all, edges: .all)
             VStack {
                 HStack {
+                    
+                    // BACK BUTTON
                     Button(action:{
                         pokemonMenu = false
                     }){
@@ -26,13 +33,19 @@ struct PokemonChoice: View {
                         
                     }.buttonModify()
                     Spacer()
+                    
+                    // POKEMONS MENU TITLE
                     Text("Pokemons").font(.title)
                     Spacer()
+                    
+                    // POKEPOINTS
                     Image("pokepoints").resizable().frame(width: 60, height: 60, alignment: .leading)
                     Text(String(player.pokePoints)).font(.title)
                 }.padding()
                 
                 Divider()
+                
+                // TAB VIEW - OWNED POKEMONS
                 NavigationView{
                         ZStack {
                             Color(color).ignoresSafeArea(.all, edges: .all)
@@ -42,10 +55,14 @@ struct PokemonChoice: View {
                                                 VStack {
                                                     Image(pokemon.name.lowercased()).resizable().scaledToFit()
                                                     VStack {
+                                                       
+                                                        // NAME
                                                         HStack{
                                                             Text("POKEMON:")
                                                             Text(pokemon.name)
                                                         }
+                                                       
+                                                        //PROPERTIES
                                                         HStack{
                                                             Spacer()
                                                             Text("LEVEL:")
@@ -59,6 +76,8 @@ struct PokemonChoice: View {
                                                             
                                                         }
                                                         Spacer()
+                                                        
+                                                        // CHOOSE POKEMON BUTTON / DISPLAY CURRENT POKEMON
                                                         if player.pokemons[0].id == pokemon.id{
                                                             Text("CURRENT POKEMON").font(.title2)
                                                         } else {
@@ -90,6 +109,7 @@ struct PokemonChoice: View {
     }
 }
 
+// PREVIEW
 struct PokemonChoice_Previews: PreviewProvider {
     @State static var player = Player(name: "whatevs", pokemons: [pokemonArray[0], pokemonArray[3]])
     @State static var pokemonMenu = true

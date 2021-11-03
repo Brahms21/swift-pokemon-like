@@ -8,13 +8,20 @@
 import SwiftUI
 
 struct StoreScreen: View {
+    
+    // BINDING PROPERTIES
     @Binding var storeMenu: Bool
+    @Binding var player: Player
+    
+    // STATE PROPERTIES
     @State private var opacity: Double = 0
     @State private var opacity2: Double = 0
-    @Binding var player: Player
     @State private var gameText = ""
     @State private var color = "ColorBlue"
     
+    // FUNCTIONS
+    
+    // PURCHASE SUCCEEDED FUNCTION
     func onPurchase(){
         gameText = "Purchased"
         color = "ColorGreen"
@@ -28,6 +35,7 @@ struct StoreScreen: View {
         }
     }
     
+    // PURCHASE FAILED FUNCTION
     func onNoPurchase(){
         gameText = "Not Enough PokePoints"
         color = "ColorOrange"
@@ -42,14 +50,19 @@ struct StoreScreen: View {
         
     }
     
+    // GRID LAYOUT
     let layout = [GridItem(.flexible(minimum: 40)),
                   GridItem(.flexible(minimum: 40)),
                   GridItem(.flexible(minimum: 40))]
+    
+    // BODY
     var body: some View {
         ZStack {
             Color("ColorYellow").ignoresSafeArea(.all, edges: .all)
             VStack {
                 HStack {
+                    
+                    // BACK BUTTON
                     Button(action:{
                         storeMenu = false
                     }){
@@ -57,13 +70,21 @@ struct StoreScreen: View {
                         
                     }.buttonModify()
                     Spacer()
+                    
+                    // TITLE
                     Text("Store").font(.title)
                     Spacer()
+                    
+                    // POKEPOINTS
                     Image("pokepoints").resizable().frame(width: 60, height: 60, alignment: .leading)
                     Text(String(player.pokePoints)).font(.title)
                 }.padding()
                 Divider()
+                
+                // GRID
                 LazyVGrid(columns: layout){
+                    
+                    // RANDOM POKEMON PURCHASE BUTTON
                     Button(action: {
                         if player.pokePoints >= 300{
                             player.pokePoints -= 300
@@ -82,6 +103,8 @@ struct StoreScreen: View {
                             }
                         }
                     }.buttonStyle(.bordered)
+                    
+                    // POKEBALL PURCHASE BUTTON
                     Button(action: {
                         if player.pokePoints >= 50{
                             player.pokeballs += 1
@@ -101,6 +124,8 @@ struct StoreScreen: View {
                             }
                         }
                     }.buttonStyle(.bordered)
+                    
+                    // POTION PURCHASE BUTTON
                     Button(action: {
                         if player.pokePoints >= 10{
                             player.potions += 1
@@ -122,6 +147,8 @@ struct StoreScreen: View {
                     }.buttonStyle(.bordered)
                 }.opacity(opacity).foregroundColor(.black)
                 Spacer()
+                
+                // PURCHASE SUCCEED OR FAIL CONTAINER
                 ZStack {
                     Capsule().fill(Color(color))
                     Text(gameText).font(.title3).padding()
@@ -137,6 +164,7 @@ struct StoreScreen: View {
     }
 }
 
+// PREVIEW
 struct StoreScreen_Previews: PreviewProvider {
     @State static var storeMenu = true
     @State static var player = Player(pokemons: [pokemonArray[1]])

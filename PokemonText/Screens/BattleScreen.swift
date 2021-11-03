@@ -9,9 +9,13 @@ import SwiftUI
 
 
 struct BattleScreen: View {
+    
+    // BINDING PROPERTIES
     @Binding var player: Player
     @Binding var pokemon: Pokemon
     @Binding var enemyPokemon: Pokemon
+    
+    // STATE PROPERTIES
     @State private var itemList = false
     @State private var gameText = ""
     @State private var gameText2 = ""
@@ -32,6 +36,14 @@ struct BattleScreen: View {
     @State private var itemsButtonToggle: Bool = true
     @State private var runButtonToggle: Bool = true
     @State private var winMainText = "YOU WON"
+    
+    // STORED PROPERTIES
+    @AppStorage("mainMenu") var mainMenu = false
+    @AppStorage("goToBattle") var goToBattle = true
+    
+    //FUNCTIONS:
+    
+    //PLAYER ATTACK FUNCTION
     func attackButtonAction(){
         if attackButtonToggle{
             let pokemonAtt = pokemon.skillAtt
@@ -71,6 +83,7 @@ struct BattleScreen: View {
         }
     }
     
+    // ITEM BUTTON TOGGLE FUNCTION
     func itemsButtonAction(){
         if itemsButtonToggle{
             itemMenu.toggle()
@@ -79,9 +92,8 @@ struct BattleScreen: View {
         }
 
     }
-    @AppStorage("mainMenu") var mainMenu = false
-    @AppStorage("goToBattle") var goToBattle = true
     
+    // ENEMY POKEMON ATTACK FUNCTION
     func enemyPokemonAtt(){
         attackButtonToggle.toggle()
         itemsButtonToggle.toggle()
@@ -115,6 +127,7 @@ struct BattleScreen: View {
         
     }
     
+    // CATCH POKEMON FUNCTION
     func catchPokemon(){
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             gameText2 = "3"
@@ -131,6 +144,7 @@ struct BattleScreen: View {
     \(gameText)
     SUCCESS
     """
+                // INITIALIZATION OF NEW POKEMON STRUCT IF CAUGHT
                 let enemyPokemonReInitialized = Pokemon(name: enemyPokemon.name, level: enemyPokemon.level)
                 player.pokemons.insert(enemyPokemonReInitialized, at: player.pokemons.count)
                 winText = "You have successfully caught \(enemyPokemon.name)!"
@@ -154,6 +168,7 @@ struct BattleScreen: View {
         
     }
     
+    // GAIN POKEPOINTS FUNCTION
     func gainPokePoints(){
         let gainedPoints = enemyPokemon.level * Int.random(in: 2...4)
         player.pokePoints += gainedPoints
@@ -163,7 +178,7 @@ You gained \(gainedPoints) PokePoints!
 """
     }
     
-    
+    // BODY
     var body: some View {
         
         ZStack {
@@ -171,6 +186,8 @@ You gained \(gainedPoints) PokePoints!
             VStack {
                 HStack {
                     VStack {
+                        
+                        // ITEMS IMAGES AND COUNT
                         HStack {
                             Image("potion").resizable().frame(width: 50, height: 50, alignment: .center)
                             Text(String(potions)).font(.title)
@@ -181,26 +198,34 @@ You gained \(gainedPoints) PokePoints!
                         }
                     }
                     Spacer()
+                    
+                    // POKEPOINTS
                     Image("pokepoints").resizable().frame(width: 55, height: 50, alignment: .leading)
                     Text(String(player.pokePoints)).font(.title)
                 }.padding(.horizontal, 30)
                 Spacer()
                     HStack(spacing: 20){
                         
+                        // PLAYER POKEMON IMAGE
                         VStack {
                             Image(pokemon.name.lowercased()).pokemonImage()
-                            //Image("charmander").pokemonImage()
+                            
+                            // PLAYER POKEMON PROPERTIES
                             Text("\(pokemon.name)")
                             Text("Level: \(pokemon.level)")
                             Text("HP: \(pokemonHp) / \(pokemon.maxHp)")
                             Text("MP: \(pokemonMp) / \(pokemon.maxMp)")
                         }.frame(width: 150, height: 150, alignment: .center)
                         
+                        // VS
                         Text("VS").bold().font(.title3)
                         
                         VStack {
+                            
+                            // ENEMY POKEMON IMAGE
                             Image(enemyPokemon.name.lowercased()).pokemonImage()
-                            //Image("squirtle").pokemonImage()
+                            
+                            //ENEMY POKEMON PROPERTIES
                             Text("\(enemyPokemon.name)")
                             Text("Level: \(enemyPokemon.level)")
                             Text("HP: \(String(enemyHp)) / \(enemyPokemon.maxHp)")
@@ -209,6 +234,8 @@ You gained \(gainedPoints) PokePoints!
                     }
                 Spacer()
                 HStack(spacing: 50) {
+                    
+                    // ATTACK BUTTON
                     Button(action:{
                         attackButtonAction()
                     }) {
@@ -219,6 +246,8 @@ You gained \(gainedPoints) PokePoints!
                         attackButtonToggle.toggle()
                         runButtonToggle.toggle()
                     }) {
+                        
+                        // ITEMS BUTTON
                         Text("Items")
                     }.buttonModify()
                     Button(action:{
@@ -228,10 +257,14 @@ You gained \(gainedPoints) PokePoints!
                         winMainText = ""
                         win = true
                     }){
+                        
+                        // RUN BUTTON
                         Text("run")
                     }.buttonModify().opacity(buttonOpacity)
                 }
                 ZStack {
+                    
+                    // GAME TEXT CONTAINER
                     Color("ColorBeige")
                     VStack {
                         Text(gameText).multilineTextAlignment(.center)
@@ -240,10 +273,13 @@ You gained \(gainedPoints) PokePoints!
                 }.frame(width: 350, height: 200, alignment: .center).padding()
                 
                 Spacer()
+                
+                // ITEM MENU CONTAINER
                 if itemMenu{
                     
-                    
                     HStack{
+                        
+                        // HEAL POKEMON BUTTON
                             Button(action:{
                                 if potions > 0{
                                     attackButtonToggle.toggle()
@@ -268,6 +304,8 @@ You gained \(gainedPoints) PokePoints!
                                 Text("Heal POKEMON")
                         }.buttonModify()
                         
+                        
+                            // CATCH POKEMON BUTTON
                             Button(action:{
                                 if pokeballs > 0 {
                                     buttonOpacity += 1
@@ -288,6 +326,7 @@ You gained \(gainedPoints) PokePoints!
                 }
             }
             
+            // WIN SCREEN
             if win{
                 VStack {
                     ZStack {
@@ -298,6 +337,7 @@ You gained \(gainedPoints) PokePoints!
                         }
                     }.scaledToFit()
                     
+                    // CONTINUE BUTTON
                     Button(action:{
                         withAnimation(.easeIn(duration: 0.5)){
                             opacity -= 1
@@ -313,6 +353,7 @@ You gained \(gainedPoints) PokePoints!
                     }.buttonModify()
                 }
                 
+                // LOSE SCREEN
             } else if lose{
                 VStack {
                     
@@ -323,6 +364,8 @@ You gained \(gainedPoints) PokePoints!
                             Text(loseText).font(.title2)
                         }
                     }.scaledToFit()
+                    
+                    // CONTINUE BUTTON
                     Button(action:{
                         goToBattle = false
                         mainMenu = true
@@ -336,7 +379,9 @@ You gained \(gainedPoints) PokePoints!
                 }
             }
             
-        }.onAppear{
+        }
+        // INITIALIZATION OF PROPERTIES ON APPEAR
+        .onAppear{
             var sumLevels = 0
             for item in player.pokemons{
                 sumLevels += item.level
@@ -352,6 +397,7 @@ You gained \(gainedPoints) PokePoints!
             potions = player.potions
             pokeballs = player.pokeballs
             gameText = enemyPokemon.battleStartText()
+            
             withAnimation(.easeIn(duration: 0.5)) {
                 opacity += 1
             }
@@ -360,11 +406,9 @@ You gained \(gainedPoints) PokePoints!
 }
 
 
-
+// PREVIEW
 struct BattleScreen_Previews: PreviewProvider {
     @State static var player = Player(pokemons: [pokemonArray[0]])
-
-    
     @State static var pokemon = pokemonArray[0]
     @State static var enemyPokemon = pokemonArray[1]
     static var previews: some View {
