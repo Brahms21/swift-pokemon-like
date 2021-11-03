@@ -23,11 +23,17 @@ struct MainMenu: View {
             Color("ColorYellow").ignoresSafeArea(.all, edges: .all)
             if mainMenu && !pokemonMenu && !itemsMenu && !storeMenu{
                 VStack {
+                    HStack {
+                        Spacer()
+                        Image("pokepoints").resizable().frame(width: 60, height: 60, alignment: .leading)
+                        Text(String(player.pokePoints)).font(.title)
+                    }.padding().opacity(opacity)
                     Image("logo")
                         .resizable()
                         .scaledToFit()
-                        .padding()
+                        .padding(0)
                         .scaleEffect(startAnimation ? 1.0 : 0.6)
+                    
                     Spacer()
                     VStack{
                         Spacer()
@@ -66,13 +72,17 @@ struct MainMenu: View {
                 }
             } else if pokemonMenu{
                 PokemonChoice(player: $player, pokemonMenu: $pokemonMenu)
+            } else if itemsMenu{
+                ItemScreen(player: $player, itemsMenu: $itemsMenu, storeMenu: $storeMenu)
+            } else if storeMenu{
+                StoreScreen(storeMenu: $storeMenu, player: $player)
             }
         }
     }
 }
 
 struct MainMenu_Previews: PreviewProvider {
-    @State static var player = Player(name: "whatevs", items: ["whatevs"], pokemons: [pokemonArray[0], pokemonArray[3]])
+    @State static var player = Player(name: "whatevs", pokemons: [pokemonArray[0], pokemonArray[3]])
     static var previews: some View {
         MainMenu(player: $player)
     }

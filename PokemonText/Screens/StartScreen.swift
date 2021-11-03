@@ -43,9 +43,11 @@ struct StartScreen: View {
     @State private var opacity4 = 0.0
     
     func ChoosePokemonButton(_ chosenPokemon: Int) {
-        pokemon = pokemonArray[chosenPokemon]
-        player.pokemons.append(pokemon)
-        if chosenPokemon < pokemonArray.count - 1 {
+        player.pokemons.remove(at: 0)
+        player.pokemons.insert(pokemonArray[chosenPokemon], at: 0)
+        pokemon = player.pokemons[0]
+        
+        if chosenPokemon < pokemonArray.count - 2 {
             enemyPokemon = pokemonArray[chosenPokemon + 1]
         } else {
             enemyPokemon = pokemonArray[0]
@@ -124,7 +126,7 @@ struct StartScreen: View {
                     Text(gameText.chooseName)
                         .padding()
                         .multilineTextAlignment(.center)
-                        .font(.system(.headline)).foregroundColor(Color("ColorBlue"))
+                        .font(.system(.headline))
                     
                     TextField("Name", text: $player.name)
                         .padding()
@@ -140,7 +142,7 @@ struct StartScreen: View {
                             choosePokemon = true
                             pokemonChosen = true
                             pokemon = pokemonArray[3]
-                            player.pokemons.append(pokemon)
+                            player.pokemons.insert(pokemon, at: 0)
                         }
                         
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
@@ -197,7 +199,6 @@ struct StartScreen: View {
                         }
                     } //: HSTACK
                 }//: VSTACK
-                .foregroundColor(Color("ColorBlue"))
                 .opacity(opacity3)
                     .onAppear{
                         withAnimation(.easeIn(duration: 0.5)) {
@@ -222,11 +223,9 @@ struct StartScreen: View {
                     
                     Text(pokemon.choosePokemonText()).padding().multilineTextAlignment(.center).font(.system(.headline))
                     
-                    Image("\(pokemon.name)".lowercased()).pokemonImage().padding()
+                    Image("\(pokemon.name)".lowercased()).resizable().scaledToFit().padding()
                     
                     Spacer()
-                   
-                    Text(gameText.letsBattle + enemyPokemon.name)
                         .padding()
                         .multilineTextAlignment(.center)
                         .font(.system(.headline))
@@ -249,8 +248,6 @@ struct StartScreen: View {
                     }.buttonModify()
                         .padding()
                 }//: VSTACK
-                .foregroundColor(Color("ColorBlue"))
-            
             }.opacity(opacity4)
                 .onAppear {
                     withAnimation(.easeIn(duration: 0.5)) {

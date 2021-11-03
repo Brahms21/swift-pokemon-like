@@ -8,7 +8,9 @@
 import Foundation
 import SwiftUI
 
-struct Pokemon: Hashable {
+struct Pokemon: Identifiable, Hashable {
+    var id = UUID()
+    
     var name: String = ""
    
     var level: Int

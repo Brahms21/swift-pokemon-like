@@ -19,22 +19,92 @@ struct BattleScreen: View {
     @State private var enemyHp = 0
     @State private var pokemonMp = 0
     @State private var enemyMp = 0
+    @State private var potions = 0
+    @State private var pokeballs = 0
     @State private var win = false
     @State private var lose = false
     @State private var itemMenu = false
-    @State private var potions = 3
-    @State private var pokeballs = 3
+    @State private var winText = ""
+    @State private var loseText = ""
     @State private var opacity: Double = 0
+    @State private var buttonOpacity: Double = 1
+    @State private var attackButtonToggle: Bool = true
+    @State private var itemsButtonToggle: Bool = true
+    @State private var runButtonToggle: Bool = true
+    @State private var winMainText = "YOU WON"
+    func attackButtonAction(){
+        if attackButtonToggle{
+            let pokemonAtt = pokemon.skillAtt
+            pokemonMp -= 3
+            enemyHp -= pokemonAtt
+            if enemyHp <= 0{
+                enemyHp = 0
+                pokemon.exp += enemyPokemon.giveExp
+                winText = "\(pokemon.name) has gained \(enemyPokemon.giveExp) EXP."
+                if pokemon.exp >= pokemon.requiredExp{
+                    pokemon.exp -= pokemon.requiredExp
+                    pokemon.level += 1
+                    winText = """
+            \(winText)
+            \(pokemon.name) has leveled up to level \(pokemon.level)!
+            """
+                }
+                player.pokemons.remove(at: 0)
+                player.pokemons.insert(pokemon, at: 0)
+                gainPokePoints()
+                attackButtonToggle.toggle()
+                itemsButtonToggle.toggle()
+                runButtonToggle.toggle()
+                player.potions = potions
+                player.pokeballs = pokeballs
+                win = true
+                return
+            }
+            gameText = """
+                \(pokemon.attackText(pokemonAtt))
+                \(enemyPokemon.loseHpText(pokemonAtt))
+                """
+            gameText2 = ""
+            enemyPokemonAtt()
+        } else{
+            return
+        }
+    }
+    
+    func itemsButtonAction(){
+        if itemsButtonToggle{
+            itemMenu.toggle()
+        } else {
+            return
+        }
+
+    }
     @AppStorage("mainMenu") var mainMenu = false
     @AppStorage("goToBattle") var goToBattle = true
     
     func enemyPokemonAtt(){
+        attackButtonToggle.toggle()
+        itemsButtonToggle.toggle()
+        runButtonToggle.toggle()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             let enemyAtt = enemyPokemon.skillAtt
             pokemonHp -= enemyAtt
             enemyMp -= 3
+            attackButtonToggle.toggle()
+            itemsButtonToggle.toggle()
+            runButtonToggle.toggle()
             if pokemonHp <= 0 {
                 pokemonHp = 0
+                pokemon.exp -= enemyPokemon.giveExp
+                if pokemon.exp <= 0{
+                    pokemon.exp = 0
+                }
+                loseText = "\(pokemon.name) has lost \(enemyPokemon.giveExp) EXP."
+                attackButtonToggle.toggle()
+                itemsButtonToggle.toggle()
+                runButtonToggle.toggle()
+                player.potions = potions
+                player.pokeballs = pokeballs
                 lose = true
             }
             gameText2 = """
@@ -61,9 +131,19 @@ struct BattleScreen: View {
     \(gameText)
     SUCCESS
     """
-                player.pokemons.append(enemyPokemon)
+                let enemyPokemonReInitialized = Pokemon(name: enemyPokemon.name, level: enemyPokemon.level)
+                player.pokemons.insert(enemyPokemonReInitialized, at: player.pokemons.count)
+                winText = "You have successfully caught \(enemyPokemon.name)!"
+                gainPokePoints()
+                attackButtonToggle.toggle()
+                itemsButtonToggle.toggle()
+                runButtonToggle.toggle()
+                player.potions = potions
+                player.pokeballs = pokeballs
                 win = true
             } else {
+                attackButtonToggle.toggle()
+                runButtonToggle.toggle()
                 gameText = """
     \(gameText)
     FAILED to catch \(enemyPokemon.name)
@@ -74,6 +154,14 @@ struct BattleScreen: View {
         
     }
     
+    func gainPokePoints(){
+        let gainedPoints = enemyPokemon.level * Int.random(in: 2...4)
+        player.pokePoints += gainedPoints
+        winText = """
+\(winText)
+You gained \(gainedPoints) PokePoints!
+"""
+    }
     
     
     var body: some View {
@@ -81,93 +169,135 @@ struct BattleScreen: View {
         ZStack {
             Color("ColorYellow").ignoresSafeArea(.all, edges: .all)
             VStack {
+                HStack {
+                    VStack {
+                        HStack {
+                            Image("potion").resizable().frame(width: 50, height: 50, alignment: .center)
+                            Text(String(potions)).font(.title)
+                        }
+                        HStack {
+                            Image("pokeball").resizable().frame(width: 50, height: 50, alignment: .center)
+                            Text(String(pokeballs)).font(.title)
+                        }
+                    }
+                    Spacer()
+                    Image("pokepoints").resizable().frame(width: 55, height: 50, alignment: .leading)
+                    Text(String(player.pokePoints)).font(.title)
+                }.padding(.horizontal, 30)
+                Spacer()
                     HStack(spacing: 20){
                         
                         VStack {
                             Image(pokemon.name.lowercased()).pokemonImage()
                             //Image("charmander").pokemonImage()
                             Text("\(pokemon.name)")
+                            Text("Level: \(pokemon.level)")
                             Text("HP: \(pokemonHp) / \(pokemon.maxHp)")
                             Text("MP: \(pokemonMp) / \(pokemon.maxMp)")
-                        }
+                        }.frame(width: 150, height: 150, alignment: .center)
                         
-                        Image("vs").resizable().scaledToFit()
+                        Text("VS").bold().font(.title3)
                         
                         VStack {
                             Image(enemyPokemon.name.lowercased()).pokemonImage()
                             //Image("squirtle").pokemonImage()
                             Text("\(enemyPokemon.name)")
+                            Text("Level: \(enemyPokemon.level)")
                             Text("HP: \(String(enemyHp)) / \(enemyPokemon.maxHp)")
                             Text("MP: \(enemyMp) / \(enemyPokemon.maxMp)")
-                        }
+                        }.frame(width: 150, height: 150, alignment: .center)
                     }
+                Spacer()
                 HStack(spacing: 50) {
                     Button(action:{
-                        let pokemonAtt = pokemon.skillAtt
-                        pokemonMp -= 3
-                        enemyHp -= pokemonAtt
-                        if enemyHp <= 0{
-                            enemyHp = 0
-                            win = true
-                            return
-                        }
-                        gameText = """
-                            \(pokemon.attackText(pokemonAtt))
-                            \(enemyPokemon.loseHpText(pokemonAtt))
-                            """
-                        
-                        enemyPokemonAtt()
+                        attackButtonAction()
                     }) {
                         Text("Attack")
-                    }.buttonModify()
+                    }.buttonModify().opacity(buttonOpacity)
                     Button(action:{
-                        itemMenu.toggle()
+                        itemsButtonAction()
+                        attackButtonToggle.toggle()
+                        runButtonToggle.toggle()
                     }) {
                         Text("Items")
                     }.buttonModify()
-                    Button(action:{}){
+                    Button(action:{
+                        player.potions = potions
+                        player.pokeballs = pokeballs
+                        winText = "You ran away!"
+                        winMainText = ""
+                        win = true
+                    }){
                         Text("run")
-                    }.buttonModify()
+                    }.buttonModify().opacity(buttonOpacity)
                 }
-                Text(gameText).padding().multilineTextAlignment(.center)
-                Text(gameText2)
+                ZStack {
+                    Color("ColorBeige")
+                    VStack {
+                        Text(gameText).multilineTextAlignment(.center)
+                        Text(gameText2).multilineTextAlignment(.center).foregroundColor(Color("ColorOrange"))
+                    }
+                }.frame(width: 350, height: 200, alignment: .center).padding()
                 
+                Spacer()
                 if itemMenu{
-                    VStack() {
-                        Text("HEALING POTIONS: \(potions)")
-                        Text("POKEBALLS: \(pokeballs)")
-                    }.padding()
+                    
                     
                     HStack{
-                        Button(action:{
-                            potions -= 1
-                            pokemonHp += 5
-                            if pokemonHp > pokemon.maxHp{
-                                pokemonHp = pokemon.maxHp
-                            }
-                            gameText = """
-\(player.healPokemon())
-\(pokemon.healPokemonText())
-"""
-                            enemyPokemonAtt()
-                        }){
-                            Text("Use HEALING POTION")
+                            Button(action:{
+                                if potions > 0{
+                                    attackButtonToggle.toggle()
+                                    potions -= 1
+                                    pokemonHp += 5
+                                    if pokemonHp > pokemon.maxHp{
+                                        pokemonHp = pokemon.maxHp
+                                    }
+                                    gameText2 = ""
+                                    gameText = """
+        \(player.healPokemon())
+        \(pokemon.healPokemonText())
+        """
+                                    buttonOpacity += 1
+                                    itemMenu = false
+                                    enemyPokemonAtt()
+                                } else {
+                                    gameText = "Out of POTIONS!"
+                                }
+                                
+                            }){
+                                Text("Heal POKEMON")
                         }.buttonModify()
-                        Button(action:{
-                            pokeballs -= 1
-                            gameText = "\(player.name) has thrown a POKEBALL"
-                            catchPokemon()
-                        }){
-                            Text("Throw POKEBALL")
+                        
+                            Button(action:{
+                                if pokeballs > 0 {
+                                    buttonOpacity += 1
+                                    itemMenu = false
+                                    pokeballs -= 1
+                                    gameText = "\(player.name) has thrown a POKEBALL"
+                                    catchPokemon()
+                                } else {
+                                    gameText = "Out of POKEBALLS!"
+                                }
+                                
+                            }){
+                                Text("Throw POKEBALL")
                         }.buttonModify()
+                        
                     }.padding()
+                    Spacer()
                 }
             }
             
             if win{
                 VStack {
+                    ZStack {
+                        Capsule().fill(Color("ColorGreen"))
+                        VStack {
+                            Text(winMainText).font(.largeTitle.bold())
+                            Text(winText).font(.title2)
+                        }
+                    }.scaledToFit()
                     
-                    Text("YOU WON!").font(.largeTitle.bold()).background(.green)
                     Button(action:{
                         withAnimation(.easeIn(duration: 0.5)){
                             opacity -= 1
@@ -186,7 +316,13 @@ struct BattleScreen: View {
             } else if lose{
                 VStack {
                     
-                    Text("YOU LOST").font(.largeTitle.bold()).background(.red)
+                    ZStack {
+                        Capsule().fill(Color("ColorOrange"))
+                        VStack {
+                            Text("YOU LOST").font(.largeTitle.bold())
+                            Text(loseText).font(.title2)
+                        }
+                    }.scaledToFit()
                     Button(action:{
                         goToBattle = false
                         mainMenu = true
@@ -201,11 +337,21 @@ struct BattleScreen: View {
             }
             
         }.onAppear{
-            gameText = pokemon.battleStartText()
+            var sumLevels = 0
+            for item in player.pokemons{
+                sumLevels += item.level
+            }
+            let averageLevel = sumLevels/player.pokemons.count
+            pokemon = player.pokemons[0]
+            enemyPokemon = pokemonArray[Int.random(in: 0...2)]
+            enemyPokemon.level = averageLevel + Int.random(in: 0...2)
             pokemonHp = pokemon.maxHp
             enemyHp = enemyPokemon.maxHp
             pokemonMp = pokemon.maxMp
             enemyMp = enemyPokemon.maxMp
+            potions = player.potions
+            pokeballs = player.pokeballs
+            gameText = enemyPokemon.battleStartText()
             withAnimation(.easeIn(duration: 0.5)) {
                 opacity += 1
             }

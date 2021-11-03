@@ -9,9 +9,13 @@ import Foundation
 
 struct Player{
     var name: String = ""
-    var items = ["POTIONS","POKEBALLS"]
+    var items: [String] {
+        ["POTIONS", "POKEBALLS"]
+    }
+    var potions = 3
+    var pokeballs = 3
     var pokemons: [Pokemon]
-    
+    var pokePoints: Int = 0
     func choosePlayer() -> String {
         "Oh \(self.name)! How could I ever Forget!"
     }
